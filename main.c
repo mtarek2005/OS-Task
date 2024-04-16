@@ -29,7 +29,7 @@ void main(){
     //get current dir, from unistd.h
     char* path = getcwd(NULL,0);
     if(!path)printf("error in pwd\n");
-    else printf(path);
+    else printf("%s\n",path);
 
     //symbolic link, from unistd.h
     //      original | shortcut
