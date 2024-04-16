@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.prefab": "yaml",
+        "*.asset": "yaml",
+        "*.unity": "yaml",
+        "*.tcc": "c",
+        "forward_list": "c",
+        "list": "c"
+    }
+}
