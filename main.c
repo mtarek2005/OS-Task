@@ -32,7 +32,9 @@ void main(){
     mkdir("Downloads",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     remove("Downloads/go.txt");
 
+    // list current dir ".", defined above
     list_print(".");
+
     //change permissions, from sys/stat.h
     //                r owner,w owner,r group,r other
     if(chmod("go.txt",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH))printf("error in chmod\n");
