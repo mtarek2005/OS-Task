@@ -6,6 +6,10 @@
 
 
 void main(){
+    FILE *go=fopen("go.txt","w");
+    if(!go)printf("error in create file\n");
+    else fclose(go);
+    mkdir("Downloads2",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     //change permissions, from sys/stat.h
     //                r owner,w owner,r group,r other
     if(chmod("go.txt",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH))printf("error in chmod\n");
