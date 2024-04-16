@@ -8,30 +8,30 @@
 void main(){
     //change permissions, from sys/stat.h
     //                r owner,w owner,r group,r other
-    if(chmod("go.txt",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH))printf("error");
+    if(chmod("go.txt",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH))printf("error in chmod\n");
 
     //create file, from stdio.h
     FILE *f=fopen("ggg.txt","w");
-    if(!f)printf("error");
+    if(!f)printf("error in create file\n");
     else fclose(f);
 
     //create dir, from sys/stat.h
-    mkdir("Downloads2",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    if(mkdir("Downloads2",S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH))printf("error in mkdir\n");
 
     //delete file or empty dir, from stdio.h
-    remove("go.txt");
-    remove("Downloads2");
+    if(remove("go.txt"))printf("error in remove file\n");
+    if(remove("Downloads2"))printf("error in remove dir\n");
 
     //change dir, from unistd.h
     //always call list and cwd again after
-    chdir("Downloads");
+    if(chdir("Downloads"))printf("error in chdir\n");
     //list();
     //get current dir, from unistd.h
     char* path = getcwd(NULL,0);
-    if(!path)printf("error");
+    if(!path)printf("error in pwd\n");
     else printf(path);
 
     //symbolic link, from unistd.h
     //      original | shortcut
-    symlink("ggg.txt","go.txt");
+    if(symlink("../ggg.txt","go.txt"))printf("error in sym\n");
 }
