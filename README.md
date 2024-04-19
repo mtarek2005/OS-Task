@@ -1,4 +1,4 @@
-open [app.c](app.c)
+see [app.c](app.c) and [utils.c](utils.c)
 
 compile with:
 ```bash
