@@ -5,6 +5,7 @@
         "*.unity": "yaml",
         "*.tcc": "c",
         "forward_list": "c",
-        "list": "c"
+        "list": "c",
+        "stdbool.h": "c"
     }
 }

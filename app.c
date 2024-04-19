@@ -200,9 +200,10 @@ toggle_perm (GtkCheckButton *widget,
             break;
         }
         g_print("%u,%u%u%u\n",struct_to_mode(selected_mode),selected_mode.ur,selected_mode.uw,selected_mode.ux);
-        // if(print_errno(chmod(selected->name,struct_to_mode(selected_mode)),"chmod")){
-        //     fill(GTK_GRID(grid));
-        // }
+        if(print_errno(chmod(selected->name,struct_to_mode(selected_mode)),"chmod")){
+            fill(GTK_GRID(grid));
+        }
+        stat(selected->name,&(selected->statbuf));
     }
 }
 static void
@@ -278,6 +279,22 @@ make_file (GtkWidget *widget,
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
 static void
+make_link (GtkWidget *widget,
+            GtkEntryIconPosition icon_pos,
+            gpointer   data)
+{
+    if(selected){
+        const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
+        char* source=realpath(selected->name,NULL);
+        g_print (p);
+        int r=symlink(source,p);
+        g_print(r?" n\n":" y\n");
+        free(source);
+        fill(GTK_GRID(grid));
+    }
+    gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
+}
+static void
 change_dir_btn (GtkWidget *widget,
              gpointer   data)
 {
@@ -308,6 +325,9 @@ activate (GtkApplication *app,
     GtkWidget *perms_grid;
     GtkWidget *perm_label;
     //GtkWidget *perm_chbox;
+    GtkWidget *lnk_box;
+    GtkWidget *lnk_entry;
+    GtkWidget *lnk_label;
 
     /* create a new window, and set its title */
     window = gtk_application_window_new (app);
@@ -431,7 +451,17 @@ activate (GtkApplication *app,
     gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
     i++;
 
+    lnk_box=gtk_box_new(GTK_ORIENTATION_HORIZONTAL,10);
+    gtk_box_append(GTK_BOX(box2),lnk_box);
 
+    lnk_label=gtk_label_new("link to:");
+    gtk_box_append(GTK_BOX(lnk_box),lnk_label);
+
+    lnk_entry = gtk_entry_new();
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(lnk_entry),GTK_ENTRY_ICON_PRIMARY,"link");
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(lnk_entry),GTK_ENTRY_ICON_SECONDARY,"gtk-add");
+    g_signal_connect (lnk_entry, "icon_press", G_CALLBACK (make_link), NULL);
+    gtk_box_append(GTK_BOX(lnk_box),lnk_entry);
 
     /* Place the second button in the grid cell (1, 0), and make it fill
     * just 1 cell horizontally and vertically (ie no spanning)

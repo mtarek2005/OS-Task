@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -10,6 +11,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 
 int print_errno(int err,char* desc){
     if(err) printf("error at %s: %s\n",desc,strerror(errno));
@@ -212,6 +214,7 @@ mode_t struct_to_mode(struct mode_bool mode){
     m|=mode.su?S_ISUID:0;
     m|=mode.sg?S_ISGID:0;
     m|=mode.sv?S_ISVTX:0;
+    return m;
 }
 
 #endif
