@@ -19,7 +19,7 @@ struct dent *selected=NULL;
 mode_struct selected_mode={};
 
 void list_print_inarr(char* path){
-    elms_len=list_inarr(path,(struct dent_agostic*)elms,1024);
+    elms_len=list_inarr(path,(struct dent_dirent*)elms,1024);
 }
 static void
 change_dir_btn (GtkWidget *widget,
