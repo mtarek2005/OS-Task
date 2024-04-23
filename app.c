@@ -19,44 +19,7 @@ struct dent *selected=NULL;
 mode_struct selected_mode={};
 
 void list_print_inarr(char* path){
-    //directory object for opendir(), from dirent.h
-    DIR *d;
-    //one file or directory from inside the directory, from dirent.h
-    struct dirent *dir;
-    //open dir, from dirent.h
-    d = opendir(path);
-    int i=0;
-    if (d) {
-        //loop over entries from readdir, from dirent.h
-        while ((dir = readdir(d)) != NULL) {
-            // check if it's not "." or ".."
-            if(strcmp(dir->d_name,".")/*&&strcmp(dir->d_name,"..")*/){
-                // get info of entry(including link target), from sys/stat.h
-                struct stat statbuf;
-                print_errno(fstatat(dirfd(d),dir->d_name,&statbuf,0),"fstatat");
-                //check if it's a link
-                bool is_lnk=dir->d_type==DT_LNK;
-                //check if it's a dir
-                bool is_dir=S_ISDIR(statbuf.st_mode);
-                //add to array
-                elms[i]=(struct dent){statbuf,dir,is_dir,is_lnk,strdup(dir->d_name),NULL,NULL};
-                elms[i].path=combine_path(path,elms[i].name);
-                i++;
-            }
-        }
-        elms_len=i;
-        //close dir, from dirent.h
-        print_errno(closedir(d),"close dir");
-    }
-    else{
-        print_errno(1,"open dir");
-    }
-}
-static int cmpstringp(const void *p1, const void *p2) { 
-    /* The actual arguments to this function are "pointers to 
-        pointers to char", but strcmp(3) arguments are "pointers 
-        to char", hence the following cast plus dereference. */ 
-    return strcmp(((struct dent*) p1)->name, ((struct dent*) p2)->name); 
+    elms_len=list_inarr(path,(struct dent_agostic*)elms,1024);
 }
 static void
 change_dir_btn (GtkWidget *widget,
@@ -161,7 +124,7 @@ toggle_perm (GtkCheckButton *widget,
              gpointer   data)
 {
     if(in_refresh)return;
-    int i=data;
+    size_t i=(size_t)data;
     if(!selected){
         gtk_check_button_set_active(widget,0);
     }
@@ -332,7 +295,7 @@ activate (GtkApplication *app,
     /* create a new window, and set its title */
     window = gtk_application_window_new (app);
     gtk_window_set_title (GTK_WINDOW (window), "File Browser");
-    gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
+    gtk_window_set_default_size (GTK_WINDOW (window), 600, 400);
 
     box=gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
 
