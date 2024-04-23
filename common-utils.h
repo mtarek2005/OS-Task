@@ -34,6 +34,7 @@ mode_t struct_to_mode(struct mode_bool mode){
     m|=mode.sv?S_ISVTX:0;
     return m;
 }
+
 struct dent_agnostic
 {
     struct stat statbuf;
@@ -43,5 +44,12 @@ struct dent_agnostic
     char* path;
     void* entry;
 };
+//compare directory entries for qsort
+static int cmpstringp(const void *p1, const void *p2) { 
+    /* The actual arguments to this function are "pointers to 
+        pointers to char", but strcmp(3) arguments are "pointers 
+        to char", hence the following cast plus dereference. */ 
+    return strcmp(((struct dent_agnostic*) p1)->name, ((struct dent_agnostic*) p2)->name); 
+}
 
 #endif

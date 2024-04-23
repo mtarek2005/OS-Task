@@ -133,12 +133,6 @@ size_t list_inarr(char* path, struct dent_dirent elms[], size_t elms_max_len){
     }
     return elms_len;
 }
-//compare directory entries for qsort
-static int cmpstringp(const void *p1, const void *p2) { 
-    /* The actual arguments to this function are "pointers to 
-        pointers to char", but strcmp(3) arguments are "pointers 
-        to char", hence the following cast plus dereference. */ 
-    return strcmp(((struct dent_dirent*) p1)->name, ((struct dent_dirent*) p2)->name); 
-}
+
 
 #endif
