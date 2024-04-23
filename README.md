@@ -1,4 +1,4 @@
-see [app.c](app.c) and [utils.c](utils.c)
+see [app.c](app.c), [utils.c](utils.c), [str-utils.c](str-utils.c) and [common-utils.h](common-utils.h)
 
 compile with:
 ```bash
