@@ -54,6 +54,15 @@ int lstat_univ(const char *file, struct stat *buf){
     free(cmd);
     return pclose(st);
 }
+int chmod_univ(const char *file, mode_t mode){
+    mode_t mode_only=mode&07777;
+    char str[20]={0};
+    snprintf(str,20,"%o",mode_only);
+    char* cmd=strdup("chmod");
+    cmd=combine_arg(cmd,str);
+    cmd=combine_arg_2(cmd,file);
+    return print_errno_return(system(cmd),"chmod");
+}
 void list_print(char* path){
     print_errno_return(system(combine_arg_2(strdup("ls -a"),path)),"ls");
 }

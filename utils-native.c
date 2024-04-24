@@ -50,6 +50,9 @@ int ln(const char *from, const char *to){
 int stat_univ(const char *file, struct stat *buf){
     return stat(file,buf);
 }
+int chmod_univ(const char *file, mode_t mode){
+    return chmod(file,mode);
+}
 void list_print(char* path){
     //directory object for opendir(), from dirent.h
     DIR *d;

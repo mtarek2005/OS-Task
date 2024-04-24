@@ -16,6 +16,7 @@ int rm(const char* path);
 int ln(const char *from, const char *to);
 char* pwd();
 int stat_univ(const char *file, struct stat *buf);
+int chmod_univ(const char *file, mode_t mode);
 
 
 typedef struct mode_bool

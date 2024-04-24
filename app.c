@@ -127,7 +127,7 @@ print_hello (GtkWidget *widget,
 static void
 toggle_perm (GtkCheckButton *widget,
              gpointer   data)
-{ //chmod,stat_univ
+{ //chmod_univ,stat_univ
     if(in_refresh)return;
     size_t i=(size_t)data;
     if(!selected){
@@ -168,7 +168,7 @@ toggle_perm (GtkCheckButton *widget,
             break;
         }
         g_print("%u,%u%u%u\n",struct_to_mode(selected_mode),selected_mode.ur,selected_mode.uw,selected_mode.ux);
-        if(print_errno(chmod(selected->name,struct_to_mode(selected_mode)),"chmod")){
+        if(print_errno(chmod_univ(selected->name,struct_to_mode(selected_mode)),"chmod")){
             fill(GTK_GRID(grid));
         }
         stat_univ(selected->name,&(selected->statbuf));
