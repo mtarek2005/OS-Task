@@ -14,6 +14,7 @@
 
 void main(){
     // setup files at beginning 
+    chdir("Test_files");
     FILE *go=fopen("go.txt","w");
     if(!go)printf("error in create file: %s\n",strerror(errno));
     else fclose(go);
