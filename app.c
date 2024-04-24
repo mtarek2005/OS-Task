@@ -2,12 +2,16 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdbool.h>
+#ifdef __NATIVE
 #include "utils.c"
+#else
+#include "utils-sh.c"
+#endif
 
 struct dent
 {
     struct stat statbuf;
-    struct dirent *dir;
+    void *dir;
     bool is_dir,is_lnk;
     char* name;
     char* path;
@@ -19,7 +23,7 @@ struct dent *selected=NULL;
 mode_struct selected_mode={};
 
 void list_print_inarr(char* path){
-    elms_len=list_inarr(path,(struct dent_dirent*)elms,1024);
+    elms_len=list_inarr(path,(struct dent_agnostic*)elms,1024);
 }
 static void
 change_dir_btn (GtkWidget *widget,
@@ -37,7 +41,7 @@ GtkWidget *sel_label;
 GtkWidget *perm_chboxes[9]={NULL};
 
 bool in_refresh=false;
-void refresh_chboxes(){
+void refresh_chboxes(){ //none
     in_refresh=true;
     if(selected){
         gtk_check_button_set_active(GTK_CHECK_BUTTON(perm_chboxes[0]),selected_mode.ur);
@@ -58,7 +62,7 @@ void refresh_chboxes(){
     in_refresh=false;
 }
 
-void fill(GtkGrid *grid){
+void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
     for (size_t i = 0; i < elms_len; i++)
     {
         gtk_grid_remove(grid,elms[i].entry);
@@ -90,6 +94,7 @@ void fill(GtkGrid *grid){
         gtk_widget_set_margin_end(label,10);
         button=gtk_button_new_with_label (elms[i].name);
         gtk_widget_set_hexpand(button,true);
+        gtk_button_set_can_shrink(GTK_BUTTON(button),true);
         gtk_widget_set_halign(gtk_button_get_child(GTK_BUTTON(button)),GTK_ALIGN_START);
         //gtk_widget_set_margin_end(button,20);
         button2=gtk_button_new_from_icon_name ("configure");
@@ -104,7 +109,7 @@ void fill(GtkGrid *grid){
         gtk_box_append(GTK_BOX(elms[i].entry),button_del);
         gtk_grid_attach (GTK_GRID (grid), elms[i].entry, 0, i+2, 2, 1);
     }
-    char* p=getcwd(NULL,0);
+    char* p=pwd();
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(path_ent)),p,-1);
     free(p);
     selected=NULL;
@@ -116,13 +121,13 @@ void fill(GtkGrid *grid){
 static void
 print_hello (GtkWidget *widget,
              gpointer   data)
-{
+{ //none
   g_print ("Hello World\n");
 }
 static void
 toggle_perm (GtkCheckButton *widget,
              gpointer   data)
-{
+{ //chmod,stat_univ
     if(in_refresh)return;
     size_t i=(size_t)data;
     if(!selected){
@@ -166,13 +171,13 @@ toggle_perm (GtkCheckButton *widget,
         if(print_errno(chmod(selected->name,struct_to_mode(selected_mode)),"chmod")){
             fill(GTK_GRID(grid));
         }
-        stat(selected->name,&(selected->statbuf));
+        stat_univ(selected->name,&(selected->statbuf));
     }
 }
 static void
 print_sth (GtkWidget *widget,
              gpointer   data)
-{
+{ //none
     struct dent *d=data;
     g_print (d->name);
     g_print ("\n");
@@ -184,7 +189,7 @@ print_sth (GtkWidget *widget,
 static void
 delete (GtkWidget *widget,
              gpointer   data)
-{
+{ // rm, rm_rec, fill
     struct dent *d=data;
     g_print (d->name);
     g_print ("  ");
@@ -194,14 +199,15 @@ delete (GtkWidget *widget,
         rm_rec(d->name);
     }
     else{
-        print_errno(remove(d->name),"remove");
+        print_errno(rm(d->name),"remove");
     }
     fill(GTK_GRID (gtk_widget_get_parent(gtk_widget_get_parent(widget))));
 }
 static void
 go_home (GtkWidget *widget,
              gpointer   data)
-{
+{ // chdir, fill
+//TODO
     const char* p="/home";
     g_print (p);
     chdir(p);
@@ -211,7 +217,8 @@ static void
 change_dir (GtkWidget *widget,
             GtkEntryIconPosition icon_pos,
             gpointer   data)
-{
+{ // chdir, fill
+//TODO
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(path_ent)));
     g_print (p);
     chdir(p);
@@ -221,7 +228,7 @@ static void
 make_dir (GtkWidget *widget,
             GtkEntryIconPosition icon_pos,
             gpointer   data)
-{
+{ //mkdir_def, fill
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
     int r=mkdir_default(p);
@@ -233,7 +240,7 @@ static void
 make_file (GtkWidget *widget,
             GtkEntryIconPosition icon_pos,
             gpointer   data)
-{
+{ // mkfile, fill
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
     int r=mkfile(p);
@@ -245,12 +252,12 @@ static void
 make_link (GtkWidget *widget,
             GtkEntryIconPosition icon_pos,
             gpointer   data)
-{
+{ //ln, fill
     if(selected){
         const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
         char* source=realpath(selected->name,NULL);
         g_print (p);
-        int r=symlink(source,p);
+        int r=ln(source,p);
         g_print(r?" n\n":" y\n");
         free(source);
         fill(GTK_GRID(grid));
@@ -260,7 +267,8 @@ make_link (GtkWidget *widget,
 static void
 change_dir_btn (GtkWidget *widget,
              gpointer   data)
-{
+{ //chdir, fill
+//TODO
     struct dent *d=data;
     g_print (d->name);
     g_print ("  ");
@@ -323,7 +331,7 @@ activate (GtkApplication *app,
     gtk_grid_attach (GTK_GRID (grid), button, 0, 0, 1, 1);
 
     path_ent = gtk_entry_new();//gtk_button_new_with_label ("Button 2");
-    char* p=getcwd(NULL,0);
+    char* p=pwd();
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(path_ent)),p,-1);
     free(p);
     gtk_entry_set_icon_from_icon_name(GTK_ENTRY(path_ent),GTK_ENTRY_ICON_SECONDARY,"keyboard-enter");

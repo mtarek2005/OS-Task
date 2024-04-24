@@ -6,6 +6,7 @@
         "*.tcc": "c",
         "forward_list": "c",
         "list": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "common-utils.h": "c"
     }
 }

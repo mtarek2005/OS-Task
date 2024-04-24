@@ -6,7 +6,7 @@
 #include <limits.h>
 #include "common-utils.h"
 
-int rm_rec(char* path){
+int rm_rec(const char* path){
     //directory object for opendir(), from dirent.h
     DIR *d;
     //one file or directory from inside the directory, from dirent.h
@@ -38,7 +38,18 @@ int rm_rec(char* path){
         return -1;
     }
 }
-
+int rm(const char* path){
+    return remove(path);
+}
+char* pwd(){
+    return getcwd(NULL,0);
+}
+int ln(const char *from, const char *to){
+    return symlink(from,to);
+}
+int stat_univ(const char *file, struct stat *buf){
+    return stat(file,buf);
+}
 void list_print(char* path){
     //directory object for opendir(), from dirent.h
     DIR *d;
@@ -96,7 +107,8 @@ struct dent_dirent
     void* entry;
 };
 // fill array with directory contents
-size_t list_inarr(char* path, struct dent_dirent elms[], size_t elms_max_len){
+size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len){
+    struct dent_dirent* elms=(struct dent_dirent*)elms_a;
     //final size to be returned
     size_t elms_len=0;
     //directory object for opendir(), from dirent.h

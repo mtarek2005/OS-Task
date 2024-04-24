@@ -43,6 +43,7 @@ void main(){
     //change dir, from unistd.h
     //always call list and cwd again after
     if(chdir("Downloads"))printf("error in chdir: %s\n",strerror(errno));
+    //if(system("chdir Downloads"))printf("error in chdir: %s\n",strerror(errno));
     printf("changed to ");
     //get current dir, from unistd.h
     char* path = getcwd(NULL,0);

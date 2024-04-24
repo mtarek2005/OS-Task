@@ -11,14 +11,21 @@
 
 int mkfile(const char* path);
 int mkdir_default(const char* path);
+int rm_rec(const char* path);
+int rm(const char* path);
+int ln(const char *from, const char *to);
+char* pwd();
+int stat_univ(const char *file, struct stat *buf);
+
+
 typedef struct mode_bool
 {
     bool ur,uw,ux,gr,gw,gx,or,ow,ox,su,sg,sv;
 } mode_struct;
-struct mode_bool mode_to_struct(mode_t mode){
+static struct mode_bool mode_to_struct(mode_t mode){
     return (struct mode_bool){mode&S_IRUSR,mode&S_IWUSR,mode&S_IXUSR,mode&S_IRGRP,mode&S_IWGRP,mode&S_IXGRP,mode&S_IROTH,mode&S_IWOTH,mode&S_IXOTH,mode&S_ISUID,mode&S_ISGID,mode&S_ISVTX};
 }
-mode_t struct_to_mode(struct mode_bool mode){
+static mode_t struct_to_mode(struct mode_bool mode){
     mode_t m=0;
     m|=mode.ur?S_IRUSR:0;
     m|=mode.uw?S_IWUSR:0;
@@ -51,5 +58,7 @@ static int cmpstringp(const void *p1, const void *p2) {
         to char", hence the following cast plus dereference. */ 
     return strcmp(((struct dent_agnostic*) p1)->name, ((struct dent_agnostic*) p2)->name); 
 }
+size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len);
+
 
 #endif

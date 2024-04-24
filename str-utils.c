@@ -4,15 +4,19 @@
 #include <string.h>
 #include <errno.h>
 
-int print_errno(int err,char* desc){
+int print_errno(int err,const char* desc){
     if(err) printf("error at %s: %s\n",desc,strerror(errno));
     return err;
 }
-void* print_errno_null(void* err,char* desc){
+void* print_errno_null(void* err,const char* desc){
     if(!err) printf("error at %s: %s\n",desc,strerror(errno));
     return err;
 }
-char* combine_path(char* path,char* name){
+int print_errno_return(int err,const char* desc){
+    if(err) printf("error at %s: %s\n",desc,strerror(err));
+    return err;
+}
+char* combine_path(const char* path,const char* name){
     size_t path_len = strlen(path);
     size_t full_len = path_len+strlen(name)+2;
     char* str = malloc(full_len);
@@ -22,7 +26,7 @@ char* combine_path(char* path,char* name){
     strcat(str,name);
     return str;
 }
-char* combine_arg_unafe(char* path,char* name){
+char* combine_arg_unafe(const char* path,const char* name){
     size_t path_len = strlen(path);
     size_t full_len = path_len+strlen(name)+2;
     char* str = malloc(full_len);
@@ -32,7 +36,7 @@ char* combine_arg_unafe(char* path,char* name){
     strcat(str,name);
     return str;
 }
-char* combine_arg(char* path,char* name){
+char* combine_arg(const char* path,const char* name){
     size_t path_len = strlen(path);
     size_t name_len = strlen(name);
     size_t path_len_e = path_len;
@@ -77,7 +81,7 @@ char* combine_arg(char* path,char* name){
     free(name_e);
     return str;
 }
-char* combine_arg_2(char* path,char* name){
+char* combine_arg_2(char* path,const char* name){
     size_t path_len = strlen(path);
     size_t name_len = strlen(name);
     size_t name_len_e = name_len;
