@@ -8,7 +8,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
-#include "utils.c"
+#include "utils-native.c"
 
 
 

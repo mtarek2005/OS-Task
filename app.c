@@ -3,7 +3,7 @@
 #include <dirent.h>
 #include <stdbool.h>
 #ifdef __NATIVE
-#include "utils.c"
+#include "utils-native.c"
 #else
 #include "utils-sh.c"
 #endif
