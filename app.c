@@ -8,7 +8,7 @@
 #include "utils-sh.c"
 #endif
 
-struct dent
+struct dent // directory entry with GtkWidget
 {
     struct stat statbuf;
     void *dir;
@@ -21,28 +21,23 @@ struct dent elms[1024];
 size_t elms_len=0;
 struct dent *selected=NULL;
 mode_struct selected_mode={};
-
-void list_print_inarr(char* path){
-    elms_len=list_inarr(path,(struct dent_agnostic*)elms,1024);
-}
-static void
-change_dir_btn (GtkWidget *widget,
-       gpointer   data);
-static void
-print_sth (GtkWidget *widget,
-       gpointer   data);
-static void
-delete (GtkWidget *widget,
-             gpointer   data);
+bool checkboxes_in_refresh=false;
 
 GtkWidget *path_ent;
 GtkWidget *grid;
 GtkWidget *sel_label;
 GtkWidget *perm_chboxes[9]={NULL};
 
-bool in_refresh=false;
+static void change_dir_btn (GtkWidget *widget, gpointer data);
+static void select_item (GtkWidget *widget, gpointer data);
+static void delete (GtkWidget *widget, gpointer data);
+
+void list_print_inarr(char* path){
+    elms_len=list_inarr(path,(struct dent_agnostic*)elms,1024);
+}
+
 void refresh_chboxes(){ //none
-    in_refresh=true;
+    checkboxes_in_refresh=true;
     if(selected){
         gtk_check_button_set_active(GTK_CHECK_BUTTON(perm_chboxes[0]),selected_mode.ur);
         gtk_check_button_set_active(GTK_CHECK_BUTTON(perm_chboxes[1]),selected_mode.uw);
@@ -59,9 +54,8 @@ void refresh_chboxes(){ //none
             gtk_check_button_set_active(GTK_CHECK_BUTTON(perm_chboxes[i]),0);
         }
     }
-    in_refresh=false;
+    checkboxes_in_refresh=false;
 }
-
 void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
     for (size_t i = 0; i < elms_len; i++)
     {
@@ -100,7 +94,7 @@ void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
         button2=gtk_button_new_from_icon_name ("configure");
         button_del=gtk_button_new_from_icon_name ("delete");
         g_signal_connect (button, "clicked", G_CALLBACK (change_dir_btn), &elms[i]);
-        g_signal_connect (button2, "clicked", G_CALLBACK (print_sth), &elms[i]);
+        g_signal_connect (button2, "clicked", G_CALLBACK (select_item), &elms[i]);
         g_signal_connect (button_del, "clicked", G_CALLBACK (delete), &elms[i]);
         //gtk_button_add_pixlabel(elms[i].entry,"folder");
         gtk_box_append(GTK_BOX(elms[i].entry),label);
@@ -117,18 +111,13 @@ void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
     refresh_chboxes();
 }
 
-
-static void
-print_hello (GtkWidget *widget,
-             gpointer   data)
+static void print_hello (GtkWidget *widget, gpointer data)
 { //none
   g_print ("Hello World\n");
 }
-static void
-toggle_perm (GtkCheckButton *widget,
-             gpointer   data)
+static void toggle_perm (GtkCheckButton *widget, gpointer data)
 { //chmod_univ,stat_univ
-    if(in_refresh)return;
+    if(checkboxes_in_refresh)return;
     size_t i=(size_t)data;
     if(!selected){
         gtk_check_button_set_active(widget,0);
@@ -174,9 +163,7 @@ toggle_perm (GtkCheckButton *widget,
         stat_univ(selected->name,&(selected->statbuf));
     }
 }
-static void
-print_sth (GtkWidget *widget,
-             gpointer   data)
+static void select_item (GtkWidget *widget, gpointer data)
 { //none
     struct dent *d=data;
     g_print (d->name);
@@ -186,9 +173,7 @@ print_sth (GtkWidget *widget,
     selected_mode=mode_to_struct(d->statbuf.st_mode);
     refresh_chboxes();
 }
-static void
-delete (GtkWidget *widget,
-             gpointer   data)
+static void delete (GtkWidget *widget, gpointer data)
 { // rm, rm_rec, fill
     struct dent *d=data;
     g_print (d->name);
@@ -203,9 +188,7 @@ delete (GtkWidget *widget,
     }
     fill(GTK_GRID (gtk_widget_get_parent(gtk_widget_get_parent(widget))));
 }
-static void
-go_home (GtkWidget *widget,
-             gpointer   data)
+static void go_home (GtkWidget *widget, gpointer data)
 { // chdir, fill
 //TODO
     const char* p="/home";
@@ -213,10 +196,7 @@ go_home (GtkWidget *widget,
     chdir(p);
     fill(GTK_GRID(grid));
 }
-static void
-change_dir (GtkWidget *widget,
-            GtkEntryIconPosition icon_pos,
-            gpointer   data)
+static void change_dir (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
 { // chdir, fill
 //TODO
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(path_ent)));
@@ -224,10 +204,7 @@ change_dir (GtkWidget *widget,
     chdir(p);
     fill(GTK_GRID(grid));
 }
-static void
-make_dir (GtkWidget *widget,
-            GtkEntryIconPosition icon_pos,
-            gpointer   data)
+static void make_dir (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
 { //mkdir_def, fill
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
@@ -236,10 +213,7 @@ make_dir (GtkWidget *widget,
     fill(GTK_GRID(grid));
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
-static void
-make_file (GtkWidget *widget,
-            GtkEntryIconPosition icon_pos,
-            gpointer   data)
+static void make_file (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
 { // mkfile, fill
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
@@ -248,10 +222,7 @@ make_file (GtkWidget *widget,
     fill(GTK_GRID(grid));
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
-static void
-make_link (GtkWidget *widget,
-            GtkEntryIconPosition icon_pos,
-            gpointer   data)
+static void make_link (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
 { //ln, fill
     if(selected){
         const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
@@ -264,9 +235,7 @@ make_link (GtkWidget *widget,
     }
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
-static void
-change_dir_btn (GtkWidget *widget,
-             gpointer   data)
+static void change_dir_btn (GtkWidget *widget, gpointer data)
 { //chdir, fill
 //TODO
     struct dent *d=data;
@@ -281,10 +250,7 @@ change_dir_btn (GtkWidget *widget,
   
 }
 
-
-static void
-activate (GtkApplication *app,
-          gpointer        user_data)
+static void activate (GtkApplication *app, gpointer user_data)
 {
     GtkWidget *window;
     GtkWidget *box;
@@ -382,45 +348,11 @@ activate (GtkApplication *app,
     perm_label=gtk_label_new("X");
     gtk_grid_attach (GTK_GRID (perms_grid), perm_label, 8, 2, 1, 1);
 
-    size_t i=0;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
-    perm_chboxes[i]=gtk_check_button_new();
-    g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
-    gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
-    i++;
+    for(size_t i=0;i<9;i++){
+        perm_chboxes[i]=gtk_check_button_new();
+        g_signal_connect (perm_chboxes[i], "toggled", G_CALLBACK (toggle_perm), (void*)i);
+        gtk_grid_attach (GTK_GRID (perms_grid), perm_chboxes[i], i, 3, 1, 1);
+    }
 
     lnk_box=gtk_box_new(GTK_ORIENTATION_HORIZONTAL,10);
     gtk_box_append(GTK_BOX(box2),lnk_box);
@@ -453,9 +385,7 @@ activate (GtkApplication *app,
     gtk_window_present (GTK_WINDOW (window));
 }
 
-int
-main (int    argc,
-      char **argv)
+int main (int argc, char **argv)
 {
   GtkApplication *app;
   int status;
