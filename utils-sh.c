@@ -6,13 +6,13 @@
 #include <limits.h>
 #include "common-utils.h"
 
-int rm_rec(const char* path){
+int rm_rec(const char* path){ // delete dir
     return print_errno_return(system(combine_arg_2(strdup("rm -rf"),path)),"rm dir");
 }
-int rm(const char* path){
+int rm(const char* path){ // delete file
     return print_errno_return(system(combine_arg_2(strdup("rm -f"),path)),"rm");
 }
-char* pwd(){
+char* pwd(){ // get current dir
     FILE* p=popen("pwd","r");
     char* line=NULL;
     size_t line_sz=0,line_len;
@@ -26,13 +26,13 @@ char* pwd(){
         return line;
     }
 }
-int ln(const char *from, const char *to){
+int ln(const char *from, const char *to){ // create symlink
     char* cmd=strdup("ln -sf");
     cmd=combine_arg_2(cmd,from);
     cmd=combine_arg_2(cmd,to);
     return print_errno_return(system(cmd),"ln");
 }
-int stat_univ(const char *file, struct stat *buf){
+int stat_univ(const char *file, struct stat *buf){ //get info about item, follows links so can get info about link target
     char* cmd=strdup("stat -Lc '%d %i %f %h %u %g %r %s %o %b %X %Y %Z'");
     cmd=combine_arg_2(cmd,file);
     FILE* st=popen(cmd,"r");
@@ -43,7 +43,7 @@ int stat_univ(const char *file, struct stat *buf){
     free(cmd);
     return pclose(st);
 }
-int lstat_univ(const char *file, struct stat *buf){
+int lstat_univ(const char *file, struct stat *buf){ //get info about item, doesn't follow links so can get info about the link itself
     char* cmd=strdup("stat -c '%d %i %f %h %u %g %r %s %o %b %X %Y %Z'");
     cmd=combine_arg_2(cmd,file);
     FILE* st=popen(cmd,"r");
@@ -54,7 +54,7 @@ int lstat_univ(const char *file, struct stat *buf){
     free(cmd);
     return pclose(st);
 }
-int chmod_univ(const char *file, mode_t mode){
+int chmod_univ(const char *file, mode_t mode){ // change permissions
     mode_t mode_only=mode&07777;
     char str[20]={0};
     snprintf(str,20,"%o",mode_only);
@@ -63,32 +63,21 @@ int chmod_univ(const char *file, mode_t mode){
     cmd=combine_arg_2(cmd,file);
     return print_errno_return(system(cmd),"chmod");
 }
-void list_print(char* path){
+void list_print(char* path){ // run ls, unused
     print_errno_return(system(combine_arg_2(strdup("ls -a"),path)),"ls");
 }
 
-int mkfile(const char* path){
+int mkfile(const char* path){ // create empty file
     return print_errno_return(system(combine_arg(strdup("touch"),path)),"touch");
 }
-int mkdir_default(const char* path){
+int mkdir_default(const char* path){ // create dir
     return print_errno_return(system(combine_arg_2(strdup("mkdir -p"),path)),"mkdir");
 }
 
 
 
-// directory entry with extra data
-struct dent_char
-{
-    struct stat statbuf;
-    char *dir;
-    bool is_dir,is_lnk;
-    char* name;
-    char* path;
-    void* entry;
-};
-// fill array with directory contents
-size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len){
-    struct dent_char* elms=(struct dent_char*)elms_a;
+// fill array with directory contents using ls
+size_t list_inarr(char* path, struct dent_agnostic elms[], size_t elms_max_len){
     //final size to be returned
     size_t elms_len=0;
     //directory object for opendir(), from dirent.h
@@ -104,8 +93,8 @@ size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len
         //loop over entries from readdir, from dirent.h
         while ((dir_len = getline(&dir,&dir_size,p)) != -1 && i<elms_max_len) {
             dir[dir_len-1]=0;
-            // check if it's not "." or ".."
-            if(strcmp(dir,".")/*&&strcmp(dir->d_name,"..")*/){
+            // check if it's not "."
+            if(strcmp(dir,".")){
                 // get info of entry(including link target), from sys/stat.h
                 struct stat statbuf;
                 struct stat statbuf_og;
@@ -117,9 +106,8 @@ size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len
                 //check if it's a dir
                 bool is_dir=S_ISDIR(statbuf.st_mode);
                 //add to array
-                elms[i]=(struct dent_char){statbuf,NULL,is_dir,is_lnk,strdup(dir),NULL,NULL};
+                elms[i]=(struct dent_agnostic){statbuf,is_dir,is_lnk,strdup(dir),full_path,NULL};
                 elms[i].path=combine_path(path,elms[i].name);
-                free(full_path);
                 i++;
             }
         }

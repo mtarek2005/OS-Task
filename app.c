@@ -11,7 +11,6 @@
 struct dent // directory entry with GtkWidget
 {
     struct stat statbuf;
-    void *dir;
     bool is_dir,is_lnk;
     char* name;
     char* path;
@@ -36,7 +35,7 @@ void list_print_inarr(char* path){
     elms_len=list_inarr(path,(struct dent_agnostic*)elms,1024);
 }
 
-void refresh_chboxes(){ //none
+void refresh_chboxes(){ 
     checkboxes_in_refresh=true;
     if(selected){
         gtk_check_button_set_active(GTK_CHECK_BUTTON(perm_chboxes[0]),selected_mode.ur);
@@ -56,11 +55,10 @@ void refresh_chboxes(){ //none
     }
     checkboxes_in_refresh=false;
 }
-void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
+void fill(GtkGrid *grid){ 
     for (size_t i = 0; i < elms_len; i++)
     {
         gtk_grid_remove(grid,elms[i].entry);
-        //g_object_unref(elms[i].entry);
         elms[i].entry=NULL;
         free(elms[i].name);
         free(elms[i].path);
@@ -78,7 +76,6 @@ void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
     for (size_t i = 0; i < elms_len; i++)
     {
         elms[i].entry = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-        //gtk_widget_set_hexpand(elms[i].entry,true);
         GtkWidget *label;
         GtkWidget *button;
         GtkWidget *button2;
@@ -90,13 +87,11 @@ void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
         gtk_widget_set_hexpand(button,true);
         gtk_button_set_can_shrink(GTK_BUTTON(button),true);
         gtk_widget_set_halign(gtk_button_get_child(GTK_BUTTON(button)),GTK_ALIGN_START);
-        //gtk_widget_set_margin_end(button,20);
         button2=gtk_button_new_from_icon_name ("configure");
         button_del=gtk_button_new_from_icon_name ("delete");
         g_signal_connect (button, "clicked", G_CALLBACK (change_dir_btn), &elms[i]);
         g_signal_connect (button2, "clicked", G_CALLBACK (select_item), &elms[i]);
         g_signal_connect (button_del, "clicked", G_CALLBACK (delete), &elms[i]);
-        //gtk_button_add_pixlabel(elms[i].entry,"folder");
         gtk_box_append(GTK_BOX(elms[i].entry),label);
         gtk_box_append(GTK_BOX(elms[i].entry),button);
         gtk_box_append(GTK_BOX(elms[i].entry),button2);
@@ -112,11 +107,11 @@ void fill(GtkGrid *grid){ //lpi, array, pwd, cmpstringp
 }
 
 static void print_hello (GtkWidget *widget, gpointer data)
-{ //none
+{
   g_print ("Hello World\n");
 }
 static void toggle_perm (GtkCheckButton *widget, gpointer data)
-{ //chmod_univ,stat_univ
+{ 
     if(checkboxes_in_refresh)return;
     size_t i=(size_t)data;
     if(!selected){
@@ -164,7 +159,7 @@ static void toggle_perm (GtkCheckButton *widget, gpointer data)
     }
 }
 static void select_item (GtkWidget *widget, gpointer data)
-{ //none
+{ 
     struct dent *d=data;
     g_print (d->name);
     g_print ("\n");
@@ -174,7 +169,7 @@ static void select_item (GtkWidget *widget, gpointer data)
     refresh_chboxes();
 }
 static void delete (GtkWidget *widget, gpointer data)
-{ // rm, rm_rec, fill
+{ 
     struct dent *d=data;
     g_print (d->name);
     g_print ("  ");
@@ -189,23 +184,21 @@ static void delete (GtkWidget *widget, gpointer data)
     fill(GTK_GRID (gtk_widget_get_parent(gtk_widget_get_parent(widget))));
 }
 static void go_home (GtkWidget *widget, gpointer data)
-{ // chdir, fill
-//TODO
+{
     const char* p="/home";
     g_print (p);
     chdir(p);
     fill(GTK_GRID(grid));
 }
 static void change_dir (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
-{ // chdir, fill
-//TODO
+{
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(path_ent)));
     g_print (p);
     chdir(p);
     fill(GTK_GRID(grid));
 }
 static void make_dir (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
-{ //mkdir_def, fill
+{
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
     int r=mkdir_default(p);
@@ -214,7 +207,7 @@ static void make_dir (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
 static void make_file (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
-{ // mkfile, fill
+{
     const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
     g_print (p);
     int r=mkfile(p);
@@ -223,7 +216,7 @@ static void make_file (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointe
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
 static void make_link (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointer data)
-{ //ln, fill
+{
     if(selected){
         const char* p=gtk_entry_buffer_get_text(gtk_entry_get_buffer(GTK_ENTRY(widget)));
         char* source=realpath(selected->name,NULL);
@@ -236,8 +229,7 @@ static void make_link (GtkWidget *widget, GtkEntryIconPosition icon_pos, gpointe
     gtk_entry_buffer_set_text(gtk_entry_get_buffer(GTK_ENTRY(widget)),"",0);
 }
 static void change_dir_btn (GtkWidget *widget, gpointer data)
-{ //chdir, fill
-//TODO
+{
     struct dent *d=data;
     g_print (d->name);
     g_print ("  ");
@@ -261,7 +253,6 @@ static void activate (GtkApplication *app, gpointer user_data)
     GtkWidget *new_file;
     GtkWidget *perms_grid;
     GtkWidget *perm_label;
-    //GtkWidget *perm_chbox;
     GtkWidget *lnk_box;
     GtkWidget *lnk_entry;
     GtkWidget *lnk_label;

@@ -99,19 +99,8 @@ int mkdir_default(const char* path){
 
 
 
-// directory entry with extra data
-struct dent_dirent
-{
-    struct stat statbuf;
-    struct dirent *dir;
-    bool is_dir,is_lnk;
-    char* name;
-    char* path;
-    void* entry;
-};
 // fill array with directory contents
-size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len){
-    struct dent_dirent* elms=(struct dent_dirent*)elms_a;
+size_t list_inarr(char* path, struct dent_agnostic elms[], size_t elms_max_len){
     //final size to be returned
     size_t elms_len=0;
     //directory object for opendir(), from dirent.h
@@ -134,7 +123,7 @@ size_t list_inarr(char* path, struct dent_agnostic elms_a[], size_t elms_max_len
                 //check if it's a dir
                 bool is_dir=S_ISDIR(statbuf.st_mode);
                 //add to array
-                elms[i]=(struct dent_dirent){statbuf,dir,is_dir,is_lnk,strdup(dir->d_name),NULL,NULL};
+                elms[i]=(struct dent_agnostic){statbuf,is_dir,is_lnk,strdup(dir->d_name),combine_path(path,dir->d_name),NULL};
                 elms[i].path=combine_path(path,elms[i].name);
                 i++;
             }

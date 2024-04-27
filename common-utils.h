@@ -46,7 +46,6 @@ static mode_t struct_to_mode(struct mode_bool mode){
 struct dent_agnostic
 {
     struct stat statbuf;
-    void *dir;
     bool is_dir,is_lnk;
     char* name;
     char* path;
