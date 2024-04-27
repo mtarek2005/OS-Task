@@ -85,13 +85,14 @@ size_t list_inarr(char* path, struct dent_agnostic elms[], size_t elms_max_len){
     //one file or directory from inside the directory, from dirent.h
     char *dir=NULL;
     size_t dir_size=0;
-    size_t dir_len;
-    //open dir, from dirent.h
+    ssize_t dir_len;
+    //open dir using popen, from stdio.h
     p = popen(combine_arg_2(strdup("ls -a"),path),"r");
     int i=0;
     if (p) {
-        //loop over entries from readdir, from dirent.h
+        //loop over entries using getline, from stdio.h
         while ((dir_len = getline(&dir,&dir_size,p)) != -1 && i<elms_max_len) {
+            // remove the \n
             dir[dir_len-1]=0;
             // check if it's not "."
             if(strcmp(dir,".")){
@@ -112,7 +113,7 @@ size_t list_inarr(char* path, struct dent_agnostic elms[], size_t elms_max_len){
             }
         }
         elms_len=i;
-        //close dir, from dirent.h
+        //close process, from stdio.h
         print_errno(pclose(p),"close ls");
     }
     else{
