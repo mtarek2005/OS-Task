@@ -1,0 +1,19 @@
+.\" Manpage for dirman.
+.TH man 1 "10 May 2024" "1.0" "dirman - The OS-1 course task"
+.SH NAME
+dirman \- simple gui file manager
+.SH SYNOPSIS
+compile with: 
+.br
+.B gcc $(pkg-config --cflags gtk4) -o app app.c $(pkg-config --libs gtk4)
+.br
+run with: 
+.B ./app
+.SH DESCRIPTION
+dirman is a simple GUI program for managing files, directory contents will be automatically displayed, click on a directory name to change to it, click on the trash icon to delete an item, create a file by entering it's name in the 'new file' text box and click the + icon, similarly create a directory using the 'new directory' text box. you can change an item's permissions by clicking on the select icon and using the check boxes in the menu. you can create a symbolic link by selecting the target file and typing the location and name of the link into the text box and clicking the+ icon
+.SH OPTIONS
+dirman does not take any command line options, everything you need is accessible through the GUI
+.SH SEE ALSO
+ls(1), mkdir(1), ln(1), chmod(1), stat(1)
+.SH AUTHOR
+Mohamed Tarek
