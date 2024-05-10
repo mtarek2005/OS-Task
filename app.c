@@ -2,11 +2,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdbool.h>
-#ifdef __NATIVE
-#include "utils-native.c"
-#else
 #include "utils-sh.c"
-#endif
 
 struct dent // directory entry with GtkWidget
 {
@@ -31,7 +27,7 @@ static void change_dir_btn (GtkWidget *widget, gpointer data);
 static void select_item (GtkWidget *widget, gpointer data);
 static void delete (GtkWidget *widget, gpointer data);
 
-void list_print_inarr(char* path){
+void list_into_arr(char* path){
     elms_len=list_inarr(path,(struct dent_agnostic*)elms,1024);
 }
 
@@ -63,7 +59,7 @@ void fill(GtkGrid *grid){
         free(elms[i].name);
         free(elms[i].path);
     }
-    list_print_inarr(".");
+    list_into_arr(".");
     qsort(elms, elms_len, sizeof(struct dent), cmpstringp);
     for (size_t i = 0; i < elms_len; i++){
         if(!strcmp(elms[i].name,"..")){
